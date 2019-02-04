@@ -1,25 +1,38 @@
 'use strict';
 
-var todoController = (function() {
-    var createTodo = function(req, res, next) {
-        var text = req.body.text;
-        if(!text) {
-            next({message: 'todo should be provided'});
+var todoController = (() => {
+
+    var createTodo = async (req, res, next) => {
+        try {
+            var text = req.body.text;
+            if(!text) {
+                var err = new Error('todo should be provided');
+                err.msg = 'todo should be provided';
+                err.status = 406;
+                next(err);
+                return;
+            }
+            var todo = {text};
+            var TodoModel = req.db.TodoModel;
+            await TodoModel.create(todo);
+            res.json({message: 'success'});
+        } catch(err) {
+            err.msg = 'failed to save todo';
+            err.status = 400;
+            next(err);
         }
-        var todo = {text};
-        var TodoModel = req.db.todoModel;
-        TodoModel.create(todo, function(err){
-            if(err) res.send({message: 'failed to save todo'})
-            else res.send({message: 'success'})
-        });
     }
 
-    var listTodos = (req, res, next) => {
-        var TodoModel = req.db.todoModel;
-        TodoModel.findAll({}, function(err, todos) {
-            if(err) res.send({message: 'failed to fetch list of todos'});
-            else res.send({message: 'success', todos});
-        })
+    var listTodos = async (req, res, next) => {
+        try {
+            var TodoModel = req.db.TodoModel;
+            var todos = await TodoModel.findAll({});
+            res.json({message: 'success', todos});
+        } catch(err) {
+            err.msg = 'failed to fetch todos';
+            err.status = 400;
+            next(err);
+        }
     }
 
     return {

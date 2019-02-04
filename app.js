@@ -8,7 +8,7 @@ const routes = require('./routes');
 
 const app = express();
 
-app.use(morgan('tiny'));
+app.use(morgan('dev'));
 app.use(inject); // inject models and services
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.json({
-        status: err.status || 500,
+        message: err.msg || 'not known error',
         error: err.stack
     });
 });
